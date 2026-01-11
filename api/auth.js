@@ -2,28 +2,33 @@ import crypto from 'crypto';
 
 export default function handler(req, res) {
     try {
-        const { tok, gw_addr, gw_port } = req.query;
-        const faskey = "1234567890"; // Doit être identique au routeur
+        // OpenNDS envoie soit tok/gw_addr soit un bloc 'fas' crypté
+        let { tok, gw_addr, gw_port, fas } = req.query;
+        const faskey = "1234567890"; 
 
-        // Test de bon fonctionnement sans paramètres
-        if (!tok || !gw_addr || !gw_port) {
-            return res.status(200).send("L'API NEKA est opérationnelle. En attente du routeur...");
+        // Si on a le paramètre 'fas', on doit le décoder (Mode FAS Secure 3)
+        if (fas) {
+            const decodedFas = Buffer.from(fas, 'base64').toString('utf-8');
+            // Le décodage de base donne une chaîne type: "tok=...&gw_addr=...&gw_port=..."
+            const urlParams = new URLSearchParams(decodedFas);
+            tok = urlParams.get('tok');
+            gw_addr = urlParams.get('gw_addr');
+            gw_port = urlParams.get('gw_port');
         }
 
-        // Calcul du Hash SHA256
-        const hash = crypto
-            .createHash('sha256')
-            .update(tok + faskey)
-            .digest('hex');
+        if (!tok || !gw_addr || !gw_port) {
+            return res.status(200).send("L'API NEKA attend les paramètres du routeur (fas ou tok).");
+        }
 
-        // URL de redirection vers le routeur
+        // Calcul du Hash SHA256 (Signature de sécurité)
+        const hash = crypto.createHash('sha256').update(tok + faskey).digest('hex');
+
+        // URL de redirection finale pour libérer l'accès
         const redirectUrl = `http://${gw_addr}:${gw_port}/opennds_auth/?tok=${tok}&hash=${hash}`;
 
-        // Redirection
         return res.redirect(302, redirectUrl);
 
     } catch (error) {
-        console.error("Erreur d'authentification:", error);
-        return res.status(500).json({ error: "Erreur interne du serveur" });
+        return res.status(500).json({ error: "Erreur lors du décodage FAS" });
     }
 }
