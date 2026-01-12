@@ -6,6 +6,7 @@ export default function handler(req, res) {
         let { tok, gw_addr, gw_port, fas } = req.query;
         const faskey = "1234567890"; 
 
+        console.log("Requête reçue avec les paramètres:", req.query);
         // Si on a le paramètre 'fas', on doit le décoder (Mode FAS Secure 3)
         if (fas) {
             const decodedFas = Buffer.from(fas, 'base64').toString('utf-8');
