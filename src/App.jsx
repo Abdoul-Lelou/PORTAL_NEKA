@@ -7,16 +7,25 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [timeLeft, setTimeLeft] = useState(10);
   const [canActivate, setCanActivate] = useState(false);
-  
-  // NOUVEAU : État pour la notification
-  const [notification, setNotification] = useState(null);
+  const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
+    
+    // CAS 1 : L'utilisateur revient du routeur avec Internet activé
+    if (urlParams.get('status') === 'connected') {
+      setIsConnected(true);
+      return;
+    }
+
+    // CAS 2 : L'utilisateur arrive du portail captif
     const fas = urlParams.get('fas');
-    if (fas) setFasParams(`fas=${fas}`);
+    if (fas) {
+      setFasParams(`fas=${fas}`);
+    }
   }, []);
 
+  // Timer logique
   useEffect(() => {
     if (step === 2 && timeLeft > 0) {
       const timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
@@ -38,61 +47,63 @@ function App() {
     }, 1000);
   };
 
-  // --- LA NOUVELLE LOGIQUE D'ACTIVATION SILENCIEUSE ---
+  // --- CORRECTION MAJEURE ICI ---
   const handleActivateInternet = async () => {
     if (!fasParams) {
-      showNotification("❌ Erreur : Connectez-vous au WiFi NEKA", "error");
+      alert("Erreur paramètres. Reconnectez-vous au WiFi.");
       return;
     }
 
     setIsLoading(true);
 
     try {
-      // 1. On demande à Vercel de calculer le Hash et l'URL
+      // 1. On demande l'URL signée à ton API Vercel
       const response = await fetch(`/api/auth?${fasParams}`);
       const data = await response.json();
 
       if (data.success && data.authUrl) {
-        
-        // 2. On appelle le routeur SILENCIEUSEMENT (mode 'no-cors')
-        // 'no-cors' est vital ici car on appelle du HTTP depuis du HTTPS
-        await fetch(data.authUrl, { mode: 'no-cors' });
-
-        // 3. Succès ! On affiche la notif
-        showNotification("✅ Internet Activé ! Profitez de la visite.", "success");
-        setCanActivate(false); // On désactive le bouton pour éviter le double clic
-
+        // 2. REDIRECTION FORCÉE (Contourne le problème de Mixed Content)
+        // Le navigateur va aller sur http://192.168.8.1...
+        // Le routeur va valider et rediriger vers la page de succès
+        window.location.href = data.authUrl;
       } else {
-        throw new Error("Réponse invalide du serveur");
+        alert("Erreur de génération du lien");
+        setIsLoading(false);
       }
 
     } catch (error) {
       console.error(error);
-      showNotification("⚠️ Problème d'activation. Réessayez.", "error");
-    } finally {
+      alert("Erreur de connexion API");
       setIsLoading(false);
     }
   };
 
-  const showNotification = (message, type) => {
-    setNotification({ message, type });
-    // La notif disparait après 4 secondes
-    setTimeout(() => setNotification(null), 4000);
-  };
+  // --- PAGE DE SUCCÈS FINALE ---
+  if (isConnected) {
+    return (
+      <div style={styles.container}>
+        <div style={styles.card}>
+          <h1 style={styles.title}>NEKA <span style={styles.wifi}>WiFi</span></h1>
+          <div style={styles.successZone}>
+             <div style={{fontSize: '4rem', marginBottom: '20px'}}>🎉</div>
+             <p style={styles.readyText}>VOUS ÊTES CONNECTÉ !</p>
+             <p style={{color: '#666', marginBottom: '30px'}}>Profitez de votre navigation internet.</p>
+             <button 
+               onClick={() => window.location.href = 'https://google.com'}
+               style={styles.button}
+             >
+               Aller sur Google
+             </button>
+          </div>
+          <p style={styles.footer}>Campus France 2026</p>
+        </div>
+      </div>
+    );
+  }
 
+  // --- Reste du code (Formulaire normal) ---
   return (
     <div style={styles.container}>
-      
-      {/* Composant de Notification Flottante */}
-      {notification && (
-        <div style={{
-          ...styles.notification,
-          backgroundColor: notification.type === 'success' ? '#34a853' : '#d93025'
-        }}>
-          {notification.message}
-        </div>
-      )}
-
       <div style={styles.card}>
         <h1 style={styles.title}>NEKA <span style={styles.wifi}>WiFi</span></h1>
         
@@ -133,8 +144,11 @@ function App() {
                 opacity: isLoading ? 0.7 : 1
               }}
             >
-              {isLoading ? "ACTIVATION..." : (canActivate ? "ACTIVER INTERNET MAINTENANT" : `PATIENTEZ (${timeLeft}s)`)}
+              {isLoading ? "ACTIVATION EN COURS..." : (canActivate ? "ACTIVER INTERNET MAINTENANT" : `PATIENTEZ (${timeLeft}s)`)}
             </button>
+            <p style={{fontSize: '0.7rem', color: '#ccc', marginTop: '10px'}}>
+               Vous serez redirigé momentanément pour l'activation.
+            </p>
           </div>
         )}
         <p style={styles.footer}>Campus France 2026 • Projet NEKA</p>
@@ -143,23 +157,8 @@ function App() {
   );
 }
 
+// ... Tes styles restent les mêmes ...
 const styles = {
-  // ... tes styles précédents ...
-  // Ajoute le style de notification :
-  notification: {
-    position: 'fixed',
-    top: '20px',
-    left: '50%',
-    transform: 'translateX(-50%)',
-    color: 'white',
-    padding: '15px 25px',
-    borderRadius: '50px',
-    boxShadow: '0 4px 15px rgba(0,0,0,0.3)',
-    zIndex: 1000,
-    fontWeight: 'bold',
-    animation: 'slideIn 0.5s ease-out'
-  },
-  // ... Copie le reste de tes styles ici ...
   container: { display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', background: 'linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%)', padding: '20px' },
   card: { background: 'white', padding: '30px', borderRadius: '24px', maxWidth: '500px', width: '100%', textAlign: 'center' },
   title: { fontSize: '2rem', color: '#1a73e8', fontWeight: '800' },
