@@ -15,12 +15,13 @@ export default function handler(req, res) {
         
         // 2. Extraction des données
         // Format openNDS FAS niveau 1: "clientip=X, clientmac=Y, gatewayname=Z, hid=TOKEN, ..."
+        // Remplacer la ligne 20 par une regex plus robuste
         const params = {};
-        decodedFas.split(', ').forEach(pair => {
+        decodedFas.split(/[,&]\s*/).forEach(pair => {
             const [key, value] = pair.split('=');
-            if (key && value) params[key] = value;
+            if (key && value) params[key.trim()] = value.trim();
         });
-        
+                
         const hid = params.hid; // Token haché
         const gatewayaddress = params.gatewayaddress; // Format "IP:PORT"
         const redir = params.redir || 'http://google.com'; // URL de redirection finale
