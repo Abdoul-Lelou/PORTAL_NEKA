@@ -23,7 +23,7 @@ export default function handler(req, res) {
   });
 
   const hid = params.hid; // Le Hash ID du client
-  const gatewayAddress = params.gatewayaddress || '192.168.160.1'; // Adresse par défaut si manquante
+  const gatewayAddress = params.gatewayaddress || '192.168.8.1'; // Adresse par défaut si manquante
   const gatewayPort = '2050'; // Port par défaut openNDS
 
   // 2. Vérification (Simulation)
