@@ -40,5 +40,16 @@ export default function handler(req, res) {
   const authUrl = `http://${gatewayAddress}:${gatewayPort}/opennds_auth/?tok=${token}`;
 
   // Redirection
-  res.redirect(authUrl);
+  res.setHeader('Content-Type', 'text/html');
+  res.send(`
+    <html>
+      <body style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; font-family:sans-serif;">
+        <h2>Connexion réussie !</h2>
+        <p>Cliquez sur le bouton ci-dessous pour activer votre accès internet.</p>
+        <a href="${authUrl}" style="padding:15px 30px; background:#0070f3; color:white; text-decoration:none; border-radius:5px; font-weight:bold;">
+          ACTIVER INTERNET
+        </a>
+      </body>
+    </html>
+  `);
 }
