@@ -200,9 +200,9 @@ function App() {
           </div>
         )} */}
         
-        <p style={styles.footer}>
+        {/* <p style={styles.footer}>
           Projet 2026-2027 • NEKA WiFi
-        </p>
+        </p> */}
       {/* </div> */}
     </div>
   );
