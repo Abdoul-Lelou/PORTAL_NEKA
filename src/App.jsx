@@ -87,7 +87,7 @@ function App() {
           </div>
         )}
 
-        FORMULAIRE D'INSCRIPTION
+        {/* FORMULAIRE D'INSCRIPTION */}
         {/* <div style={styles.formSection}>
           <p style={styles.sectionTitle}>📋 Inscription Requise</p>
           <p style={styles.instruction}>
@@ -130,7 +130,7 @@ function App() {
         </div> */}
 
         {/* ZONE DE PUBLICITÉ */}
-        <div style={styles.adContainer}>
+        {/* <div style={styles.adContainer}>
           <div style={styles.adBadge}>📢 PUBLICITÉ SPONSORISÉE</div>
           <p style={styles.adText}>
             <strong>Découvrez NEKA en visite virtuelle 3D</strong><br/>
@@ -153,7 +153,7 @@ function App() {
                 width: isFormValid ? `${((10 - adCountdown) / 10) * 100}%` : '0%'
               }}
             />
-          </div>
+          </div> */}
 
           {/* {!isFormValid && (
             <p style={styles.pauseMessage}>
@@ -201,9 +201,9 @@ function App() {
         )} */}
         
         <p style={styles.footer}>
-          Projet Campus France 2026-2027 • NEKA WiFi
+          Projet 2026-2027 • NEKA WiFi
         </p>
-      </div>
+      {/* </div> */}
     </div>
   );
 }
