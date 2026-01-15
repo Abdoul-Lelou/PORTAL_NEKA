@@ -87,8 +87,8 @@ function App() {
           </div>
         )}
 
-        {/* FORMULAIRE D'INSCRIPTION */}
-        <div style={styles.formSection}>
+        FORMULAIRE D'INSCRIPTION
+        {/* <div style={styles.formSection}>
           <p style={styles.sectionTitle}>📋 Inscription Requise</p>
           <p style={styles.instruction}>
             Remplissez ces champs <strong>correctement</strong> pour démarrer le compteur
@@ -127,7 +127,7 @@ function App() {
               <div style={styles.invalidBadge}>⏸️ Remplissez correctement pour démarrer</div>
             )}
           </div>
-        </div>
+        </div> */}
 
         {/* ZONE DE PUBLICITÉ */}
         <div style={styles.adContainer}>
@@ -155,25 +155,25 @@ function App() {
             />
           </div>
 
-          {!isFormValid && (
+          {/* {!isFormValid && (
             <p style={styles.pauseMessage}>
               ⚠️ Le compteur démarrera automatiquement dès que le formulaire sera valide
             </p>
-          )}
+          )} */}
         </div>
 
         {/* VISITE 3D */}
-        <div style={styles.videoContainer}>
+        {/* <div style={styles.videoContainer}>
           <iframe 
             src="https://visite-3-d-1yfd.vercel.app/" 
             style={styles.iframe}
             title="Visite 3D NEKA"
             allow="accelerometer; gyroscope"
           />
-        </div>
+        </div> */}
 
         {/* BOUTON D'ACTIVATION */}
-        <button 
+        {/* <button 
           onClick={handleActivateInternet}
           style={{
             ...styles.authBtn,
@@ -198,7 +198,7 @@ function App() {
               ✅ Parfait <strong>{formData.name}</strong> ! Vous pouvez maintenant activer votre connexion Internet.
             </p>
           </div>
-        )}
+        )} */}
         
         <p style={styles.footer}>
           Projet Campus France 2026-2027 • NEKA WiFi
