@@ -10,7 +10,7 @@
 # Title of this theme:
 title="theme_click-to-continue-basic"
 
-# functions:
+# functions
 
 generate_splash_sequence() {
 	click_to_continue
