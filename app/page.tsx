@@ -1,65 +1,115 @@
-import Image from "next/image";
+// src/app/page.tsx
 
-export default function Home() {
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useRouters } from '@/presentation/hooks/useRouters';
+import { useRealtimeRouters } from '@/presentation/hooks/useRealtimeRouters';
+import { StatsCard } from '@/presentation/components/dashboard/StatsCard';
+import { Wifi, Users, TrendingUp, Activity } from 'lucide-react';
+import { SupabaseUserRepository } from '@/infrastructure/supabase/UserRepository';
+
+const userRepository = new SupabaseUserRepository();
+
+export default function DashboardPage() {
+  const { routers, loading } = useRouters();
+  const [totalUsers, setTotalUsers] = useState(0);
+
+  // Mise à jour temps réel
+  useRealtimeRouters((_updatedRouters) => {
+    // Les routeurs sont mis à jour automatiquement
+  });
+
+  useEffect(() => {
+    userRepository.getTotalUserCount().then(setTotalUsers);
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  const onlineRouters = routers.filter((r) => r.status === 'online').length;
+  const totalClients = routers.reduce((sum, r) => sum + r.client_count, 0);
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <div className="p-8 space-y-8">
+      <div>
+        <h1 className="text-3xl font-bold text-zinc-900 dark:text-white">
+          Vue d&apos;ensemble
+        </h1>
+        <p className="text-zinc-600 dark:text-zinc-400 mt-1">
+          Statistiques en temps réel de votre réseau NEKA
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <StatsCard
+          title="Routeurs en ligne"
+          value={onlineRouters}
+          icon={Wifi}
+          description={`${onlineRouters}/${routers.length} actifs`}
+          trend={{ value: 12, isPositive: true }}
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+        <StatsCard
+          title="Clients connectés"
+          value={totalClients}
+          icon={Activity}
+          description="Connexions actives"
+          trend={{ value: 8, isPositive: true }}
+        />
+        <StatsCard
+          title="Utilisateurs total"
+          value={totalUsers}
+          icon={Users}
+          description="Depuis le début"
+          trend={{ value: 23, isPositive: true }}
+        />
+        <StatsCard
+          title="Taux d'activité"
+          value={`${Math.round((onlineRouters / routers.length) * 100)}%`}
+          icon={TrendingUp}
+          description="Routeurs actifs"
+        />
+      </div>
+
+      <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-6">
+        <h2 className="text-xl font-bold text-zinc-900 dark:text-white mb-4">
+          Activité récente
+        </h2>
+        <div className="space-y-3">
+          {routers.slice(0, 5).map((router) => (
+            <div
+              key={router.router_id}
+              className="flex items-center justify-between py-3 border-b border-zinc-100 dark:border-zinc-800 last:border-0"
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+              <div className="flex items-center gap-3">
+                <div
+                  className={`w-2 h-2 rounded-full ${router.status === 'online' ? 'bg-green-500' : 'bg-red-500'
+                    }`}
+                />
+                <div>
+                  <p className="font-medium text-zinc-900 dark:text-white">
+                    {router.router_id}
+                  </p>
+                  <p className="text-sm text-zinc-500">{router.location}</p>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="text-sm font-medium text-zinc-900 dark:text-white">
+                  {router.client_count} clients
+                </p>
+                <p className="text-xs text-zinc-500">
+                  {router.status === 'online' ? 'En ligne' : 'Hors ligne'}
+                </p>
+              </div>
+            </div>
+          ))}
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+      </div>
     </div>
   );
 }
